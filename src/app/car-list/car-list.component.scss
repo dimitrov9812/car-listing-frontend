@@ -1,3 +1,18 @@
-:host {
-    background-color: red;
+table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+button {
+    margin: 0 5px;
+}
+
+th.mat-header-cell {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.selected {
+    background-color: #e0f7fa !important; // Light blue
+    font-weight: bold;
 }

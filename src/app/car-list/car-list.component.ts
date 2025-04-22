@@ -3,15 +3,21 @@ import { RouterOutlet } from '@angular/router';
 import { CarService } from './car.service';
 import { Car } from './interfaces/car.component';
 import { CommonModule } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'car-list',
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, MatTableModule, MatButtonModule],
   templateUrl: './car-list.component.html',
   styleUrl: './car-list.component.scss'
 })
 export class CarListComponent implements OnInit {
-    cars = signal<Car[]>([]);
+    public cars = signal<Car[]>([]);
+    public selectedCarId = signal<string | null>(null as string | null);
+
+    public displayedColumns = ['make', 'model', 'type', 'publisher', 'actions'];
+    
     
     constructor(private _carService: CarService) { };
 
@@ -51,6 +57,22 @@ export class CarListComponent implements OnInit {
         this._carService.deleteCar(id).subscribe(() => {
             this.cars.update(cars => cars.filter(car => car.id !== id));
         });
+    }
+
+    // Function to handle selection
+    public selectCar(id: string): void {
+        if (this.selectedCarId() === id) {
+            this.selectedCarId.set(null); // Deselect if already selected
+           
+            return;
+        }
+
+        this.selectedCarId.set(id);
+    }
+
+    // Check if a car is selected
+    public isSelected(id: string): boolean {
+        return this.selectedCarId() === id;
     }
 
     // public resetForm() {

@@ -1,21 +1,46 @@
-<div>
-    <h2>Car Listings ({{ cars().length }})</h2>
+<h2>Car Listings</h2>
 
-    <button (click)="loadCars()">Refresh</button>
+<table mat-table [dataSource]="cars()" class="mat-elevation-z8">
 
-    <ul>
-      <li *ngFor="let car of cars()">
-        {{ car.make }} {{ car.model }} - {{ car.type }}
-        <button (click)="deleteCar(car.id!)">Delete</button>
-      </li>
-    </ul>
+  <!-- Make Column -->
+  <ng-container matColumnDef="make">
+    <th mat-header-cell *matHeaderCellDef> Make </th>
+    <td mat-cell *matCellDef="let car"> {{car.make}} </td>
+  </ng-container>
 
-    <!-- <hr /> -->
-    <!-- <h3>Add a Car</h3>
-    <form (submit)="addCar(); $event.preventDefault()">
-      <input [(ngModel)]="newCar.make" name="make" placeholder="Make" required />
-      <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required />
-      <input [(ngModel)]="newCar.type" name="type" placeholder="Type" required />
-      <button type="submit">Add</button>
-    </form> -->
-  </div>
+  <!-- Model Column -->
+  <ng-container matColumnDef="model">
+    <th mat-header-cell *matHeaderCellDef> Model </th>
+    <td mat-cell *matCellDef="let car"> {{car.model}} </td>
+  </ng-container>
+
+  <!-- Type Column -->
+  <ng-container matColumnDef="type">
+    <th mat-header-cell *matHeaderCellDef> Type </th>
+    <td mat-cell *matCellDef="let car"> {{car.type}} </td>
+  </ng-container>
+
+  <!-- Publisher Column -->
+  <ng-container matColumnDef="publisher">
+    <th mat-header-cell *matHeaderCellDef> Publisher </th>
+    <td mat-cell *matCellDef="let car">
+      {{car.publisher.displayName}} <br />
+      <small>{{car.publisher.phone}}</small>
+    </td>
+  </ng-container>
+
+  <!-- Actions Column -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef> Actions </th>
+    <td mat-cell *matCellDef="let car">
+      <button mat-raised-button color="warn" (click)="selectCar(car.id!)">Select</button>
+      <button mat-raised-button color="warn" (click)="deleteCar(car.id!)">Delete</button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row;
+      columns: displayedColumns;"
+      [class.selected]="isSelected(row.id)"></tr>
+
+</table>
