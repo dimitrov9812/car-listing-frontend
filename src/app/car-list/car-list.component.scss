@@ -12,6 +12,12 @@ th.mat-header-cell {
     text-transform: uppercase;
 }
 
+.table-row:hover {
+    background-color: #71bac4 !important; // Light blue
+    font-weight: bold;
+    cursor: pointer;
+}
+
 .selected {
     background-color: #e0f7fa !important; // Light blue
     font-weight: bold;

@@ -5,6 +5,7 @@ import { Car } from './interfaces/car.component';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { IoConnectService } from '../interop/ioConnect.service';
 
 @Component({
   selector: 'car-list',
@@ -19,7 +20,8 @@ export class CarListComponent implements OnInit {
     public displayedColumns = ['id', 'make', 'model', 'type', 'publisher', 'actions'];
     
     
-    constructor(private _carService: CarService) { };
+    constructor(private _carService: CarService,
+                private _ioConnectService: IoConnectService) { };
 
     public ngOnInit(): void {
         this.loadCars();
@@ -60,14 +62,16 @@ export class CarListComponent implements OnInit {
     }
 
     // Function to handle selection
-    public selectCar(id: string): void {
+    public selectCar(id: string): void {        
         if (this.selectedCarId() === id) {
             this.selectedCarId.set(null); // Deselect if already selected
+            this._ioConnectService.ioConnectStore.getIOConnect().interop.invoke("DEMO.SyncCars", {id: null});
            
             return;
         }
 
         this.selectedCarId.set(id);
+        this._ioConnectService.ioConnectStore.getIOConnect().interop.invoke("DEMO.SyncCars", {id: id});
     }
 
     // Check if a car is selected

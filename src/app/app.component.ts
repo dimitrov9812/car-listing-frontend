@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { IOConnectStore } from '@interopio/ng';
 import { CarListComponent } from "./car-list/car-list.component";
+import { IoConnectService } from './interop/ioConnect.service';
 
 @Component({
   selector: 'app-root',
@@ -12,14 +12,17 @@ import { CarListComponent } from "./car-list/car-list.component";
 export class AppComponent implements OnInit {
   title = 'Car Listing App';
 
-  constructor(public readonly ioConnectStore: IOConnectStore) { };
+  constructor(private _ioConnectService: IoConnectService) { };
 
   public ngOnInit(): void {
-    if (!this.ioConnectStore.getInitError()) {
-      const ioConnect = this.ioConnectStore.getIOConnect();
-      console.log("Success: Running ioConnect version: " + ioConnect.version)
+    if (!this._ioConnectService.ioConnectStore.getInitError()) {
+      const ioConnect = this._ioConnectService.ioConnectStore.getIOConnect();
+      ;(window as any).ioConnect = ioConnect; // Expose ioConnect to the global scope for debugging
+
+      console.log("Success: Running ioConnect version: " + ioConnect.version);
+      console.log(typeof(ioConnect));
     } else {
-      console.error("Error initializing IOConnect:", this.ioConnectStore.getInitError());
+      console.error("Error initializing IOConnect:", this._ioConnectService.ioConnectStore.getInitError());
     }
   }
 }
