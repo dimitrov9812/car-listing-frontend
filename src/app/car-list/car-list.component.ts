@@ -16,7 +16,7 @@ export class CarListComponent implements OnInit {
     public cars = signal<Car[]>([]);
     public selectedCarId = signal<string | null>(null as string | null);
 
-    public displayedColumns = ['make', 'model', 'type', 'publisher', 'actions'];
+    public displayedColumns = ['id', 'make', 'model', 'type', 'publisher', 'actions'];
     
     
     constructor(private _carService: CarService) { };
