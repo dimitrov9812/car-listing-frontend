@@ -1,0 +1,21 @@
+<div>
+    <h2>Car Listings ({{ cars().length }})</h2>
+
+    <button (click)="loadCars()">Refresh</button>
+
+    <ul>
+      <li *ngFor="let car of cars()">
+        {{ car.make }} {{ car.model }} - {{ car.type }}
+        <button (click)="deleteCar(car.id!)">Delete</button>
+      </li>
+    </ul>
+
+    <!-- <hr /> -->
+    <!-- <h3>Add a Car</h3>
+    <form (submit)="addCar(); $event.preventDefault()">
+      <input [(ngModel)]="newCar.make" name="make" placeholder="Make" required />
+      <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required />
+      <input [(ngModel)]="newCar.type" name="type" placeholder="Type" required />
+      <button type="submit">Add</button>
+    </form> -->
+  </div>

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { IOConnectStore } from '@interopio/ng';
+import { CarListComponent } from "./car-list/car-list.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CarListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
