@@ -35,7 +35,7 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef> Actions </th>
     <td mat-cell *matCellDef="let car">
-      <!-- <button mat-raised-button color="warn" (click)="selectCar(car.id!)">Select</button> -->
+      <button mat-raised-button color="warn" (click)="viewCar($event, car.id!)">View</button>
       <button mat-raised-button color="warn" (click)="deleteCar(car.id!)">Delete</button>
     </td>
   </ng-container>

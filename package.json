@@ -23,6 +23,7 @@
     "@angular/router": "^19.2.0",
     "@angular/ssr": "^19.2.8",
     "@interopio/ng": "^4.0.4",
+    "@interopio/workspaces-api": "^3.5.6",
     "express": "^4.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

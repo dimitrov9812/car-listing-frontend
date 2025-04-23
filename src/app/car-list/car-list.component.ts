@@ -1,21 +1,23 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { CarService } from './car.service';
 import { Car } from './interfaces/car.component';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { IoConnectService } from '../interop/ioConnect.service';
+import { IOConnectWorkspaces } from '@interopio/workspaces-api';
 
 @Component({
   selector: 'car-list',
-  imports: [RouterOutlet, CommonModule, MatTableModule, MatButtonModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule],
   templateUrl: './car-list.component.html',
   styleUrl: './car-list.component.scss'
 })
 export class CarListComponent implements OnInit {
     public cars = signal<Car[]>([]);
     public selectedCarId = signal<string | null>(null as string | null);
+    public workspaces = signal<IOConnectWorkspaces.API | null>(null);
+    public currentWorkspace = signal<IOConnectWorkspaces.Workspace | null>(null);
 
     public displayedColumns = ['id', 'make', 'model', 'type', 'publisher', 'actions'];
     
@@ -25,6 +27,7 @@ export class CarListComponent implements OnInit {
 
     public ngOnInit(): void {
         this.loadCars();
+        this.getWorkspaces();
     }
 
     public loadCars(): void {
@@ -32,28 +35,6 @@ export class CarListComponent implements OnInit {
           this.cars.set(data);
         });
     }
-    
-    // public addCar(): void {
-    //     const completeCar: Car = {
-    //         ...this.newCar,
-    //         features: this.generateEmptyFeatures(),
-    //         pictures: [],
-    //         publisher: {
-    //         id: crypto.randomUUID(),
-    //         firstName: 'John',
-    //         lastName: 'Doe',
-    //         displayName: 'JohnD',
-    //         phone: '+123456789',
-    //         address: 'Some Street 123',
-    //         profilePicture: ''
-    //         }
-    //     } as Car;
-
-    //     this._carService.createCar(completeCar).subscribe(created => {
-    //         this.cars.update(cars => [...cars, created]);
-    //         this.resetForm();
-    //     });
-    // }
 
     public deleteCar(id: string): void {
         this._carService.deleteCar(id).subscribe(() => {
@@ -61,17 +42,43 @@ export class CarListComponent implements OnInit {
         });
     }
 
+    public viewCar(event: any, id: string): void {
+        // Prevent deselecting the row
+        event.stopPropagation();
+
+        console.log("CALLING INTENT");
+        this._ioConnectService
+            .getIoConnect()
+            .intents
+            .raise({
+                intent: "DEMO.ShowCarDetails",
+                target: { app: "car-details-app" },
+                context: {
+                    type: "CAR",
+                    data: {
+                        id: id
+                    }
+                }
+            });
+        
+        if (this.selectedCarId() == id) {
+            return;
+        }
+    
+        this.selectedCarId.set(id);
+    }
+
     // Function to handle selection
     public selectCar(id: string): void {        
         if (this.selectedCarId() === id) {
-            this.selectedCarId.set(null); // Deselect if already selected
-            this._ioConnectService.ioConnectStore.getIOConnect().interop.invoke("DEMO.SyncCars", {id: null});
+            //this.selectCarByMethod(null);
+            this.selectCarByWorkspaceContext(null);
            
             return;
         }
 
-        this.selectedCarId.set(id);
-        this._ioConnectService.ioConnectStore.getIOConnect().interop.invoke("DEMO.SyncCars", {id: id});
+        //this.selectCarByMethod(id);
+        this.selectCarByWorkspaceContext(id);
     }
 
     // Check if a car is selected
@@ -79,33 +86,68 @@ export class CarListComponent implements OnInit {
         return this.selectedCarId() === id;
     }
 
-    // public resetForm() {
-    //     this.newCar = {
-    //         make: '',
-    //         model: '',
-    //         type: '',
-    //         features: {},
-    //         pictures: [],
-    //         publisher: {
-    //         id: '',
-    //         firstName: '',
-    //         lastName: '',
-    //         displayName: '',
-    //         phone: '',
-    //         address: '',
-    //         profilePicture: ''
-    //         }
-    //     };
-    // }
+    private selectCarByMethod(id: string | null): void {
+        this.selectedCarId.set(id);
+        this._ioConnectService
+            .getIoConnect()
+            .interop
+            .invoke("DEMO.SyncCars", {id: id});
+    }
 
-    // private generateEmptyFeatures(): { [key: string]: boolean } {
-    //     const keys = [
-    //         "airConditioning", "sunroof", "heatedSeats", "bluetooth",
-    //         "backupCamera", "cruiseControl", "laneAssist", "parkingSensors",
-    //         "keylessEntry", "remoteStart", "leatherSeats", "navigationSystem",
-    //         "appleCarPlay", "androidAuto", "blindSpotMonitor", "adaptiveHeadlights",
-    //         "fogLights", "alloyWheels", "tintedWindows", "sportPackage"
-    //     ];
-    //     return Object.fromEntries(keys.map(k => [k, false]));
-    // }
+    private selectCarByWorkspaceContext(id: string | null): void {
+        this.selectedCarId.set(id);
+        console.log("setting workspace context to car id:", id);
+        this?.currentWorkspace()?.updateContext({
+            type: "CAR",
+            data: {
+                id: id
+            }
+        });
+    }
+
+    private getWorkspaces(): void {
+        const workspaces = this._ioConnectService.getIoWorkspaces();
+        if (workspaces) {
+            this.workspaces.set(workspaces);
+
+            workspaces.inWorkspace().then((workspace: any) => {
+                workspaces.getMyWorkspace().then((workspace: any) => {
+                    console.log("Current workspace:", workspace);
+                    this.currentWorkspace.set(workspace);
+                    
+                    this.handleInitialWorkspaceContext();
+                    this.subscribeToContextChanges();
+                });
+            }).catch((error: any) => {
+                console.error("Error getting current workspace:", error);
+            });
+        } else {
+            console.error("Workspaces API is not available.");
+        }
+    }
+
+    private handleInitialWorkspaceContext(): void {
+        this.currentWorkspace()
+            ?.getContext()
+            .then((context: any) => {
+                console.log("Initial workspace context:", context);
+                if (context.type === "CAR") {
+                    this.selectedCarId.set(context.data.id);
+                } else {
+                    this.selectedCarId.set(null);
+                }
+            });
+    }
+
+    private subscribeToContextChanges(): void {
+        this.currentWorkspace()
+            ?.onContextUpdated((context: any) => {
+                console.log("Workspace context changed:", context);
+                if (context.type === "CAR") {
+                    this.selectedCarId.set(context.data.id);
+                } else {
+                    this.selectedCarId.set(null);
+                }
+            });
+    }
 }
