@@ -13,6 +13,7 @@ export interface Car {
 id?: string;
 make: string;
 model: string;
+price: string;
 datePublished?: string;
 type: string;
 features: { [key: string]: boolean };

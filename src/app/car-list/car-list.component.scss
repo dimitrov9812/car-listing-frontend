@@ -16,9 +16,16 @@ th.mat-header-cell {
     background-color: #71bac4 !important; // Light blue
     font-weight: bold;
     cursor: pointer;
+    color: black;
 }
 
 .selected {
     background-color: #e0f7fa !important; // Light blue
     font-weight: bold;
+    color: black;
+}
+
+.priceChanged {
+    background-color: red !important;
+    color: white;
 }

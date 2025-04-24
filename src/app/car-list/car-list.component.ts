@@ -18,8 +18,9 @@ export class CarListComponent implements OnInit {
     public selectedCarId = signal<string | null>(null as string | null);
     public workspaces = signal<IOConnectWorkspaces.API | null>(null);
     public currentWorkspace = signal<IOConnectWorkspaces.Workspace | null>(null);
+    public inWorkspace = signal<boolean>(false);
 
-    public displayedColumns = ['id', 'make', 'model', 'type', 'publisher', 'actions'];
+    public displayedColumns = ['id', 'make', 'model', 'price', 'type', 'publisher', 'actions'];
     
     
     constructor(private _carService: CarService,
@@ -28,10 +29,13 @@ export class CarListComponent implements OnInit {
     public ngOnInit(): void {
         this.loadCars();
         this.getWorkspaces();
+        this.isInWorkspaceCheck();
+        this.subscribeToPriceStream();
     }
 
     public loadCars(): void {
         this._carService.getCars().subscribe(data => {
+          console.log('cars loaded:', data);
           this.cars.set(data);
         });
     }
@@ -71,14 +75,17 @@ export class CarListComponent implements OnInit {
     // Function to handle selection
     public selectCar(id: string): void {        
         if (this.selectedCarId() === id) {
-            //this.selectCarByMethod(null);
-            this.selectCarByWorkspaceContext(null);
+            this.inWorkspace() ?
+                this.selectCarByWorkspaceContext(null) :
+                this.selectCarByMethod(null);
+            
            
             return;
         }
 
-        //this.selectCarByMethod(id);
-        this.selectCarByWorkspaceContext(id);
+        this.inWorkspace() ?
+            this.selectCarByWorkspaceContext(id) :
+            this.selectCarByMethod(id);
     }
 
     // Check if a car is selected
@@ -87,6 +94,7 @@ export class CarListComponent implements OnInit {
     }
 
     private selectCarByMethod(id: string | null): void {
+        console.log("Select car by method:", id);
         this.selectedCarId.set(id);
         this._ioConnectService
             .getIoConnect()
@@ -148,6 +156,56 @@ export class CarListComponent implements OnInit {
                 } else {
                     this.selectedCarId.set(null);
                 }
+            });
+    }
+
+    private isInWorkspaceCheck(): void {
+        this._ioConnectService.getIoConnect().workspaces?.inWorkspace().then((x) => {
+            this.inWorkspace.set(x);
+        }).catch(() => {
+            console.error("Error checking if in workspace");
+        });
+    }
+
+    private subscribeToPriceStream(): void {
+        this._ioConnectService
+            .getIoConnect()
+            .interop
+            .subscribe('Demo.LastTradesStream')
+            .then((subscription) => {
+                subscription.onData((carData) => {
+                    console.log("Price stream data:", carData.data);
+                    console.log(this.cars());
+
+                    this.cars.update(prevCars => {
+                        prevCars.forEach((car: any) => {
+                            if (car?.make === carData.data.carMake) {
+                                console.log("MATCH");
+                                const element: any = document.querySelector('.price-box-' + car.id); // or use getElementsByClassName
+
+                                if (element) {
+                                    const origStyle = element.style;
+
+                                    element.style.color = 'white';
+
+                                    if (car.price > carData.data.lastPrice) {
+                                        element.style.backgroundColor = 'red';
+                                    } else {
+                                        element.style.backgroundColor = 'green';
+                                    }
+
+                                    setTimeout(() => {
+                                        element.style = origStyle;
+                                    }, 1000); // 1 second
+                                }
+                                
+                                car.price = carData.data.lastPrice;
+                            }
+                        });
+
+                        return prevCars;
+                    })
+                });
             });
     }
 }
