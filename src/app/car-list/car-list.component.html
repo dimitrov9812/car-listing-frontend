@@ -1,5 +1,16 @@
 <h2>Car Listings</h2>
 
+<label for="make-select">Get price updates on:</label>
+<select
+  id="make-select"
+  [value]="selectedCarMakeDropdown()"
+  (change)="onMakeSelected($event)"
+>
+  <option *ngFor="let car of cars()">
+    {{ car.make }}
+  </option>
+</select>
+
 <table mat-table [dataSource]="cars()" class="mat-elevation-z8">
 
   <ng-container matColumnDef="id">

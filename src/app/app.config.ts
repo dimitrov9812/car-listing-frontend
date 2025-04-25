@@ -7,6 +7,7 @@ import { IOConnectNg } from "@interopio/ng";
 import IODesktop from "@interopio/desktop";
 import { provideHttpClient } from '@angular/common/http';
 import IOConnectWorkspaces from '@interopio/workspaces-api';
+import IOSearch from '@interopio/search-api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,7 +21,7 @@ export const appConfig: ApplicationConfig = {
         desktop: {
           factory: IODesktop,
           config: {
-            libraries: [IOConnectWorkspaces]
+            libraries: [IOConnectWorkspaces, IOSearch]
           }
         },
       })

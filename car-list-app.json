@@ -3,7 +3,7 @@
     "type":"window",
     "name":"first-app",
     "autoStart": false,
-    "allowMultiple": false,
+    "allowMultiple": true,
     "hidden": false,
     "service": false,
     "details": {
